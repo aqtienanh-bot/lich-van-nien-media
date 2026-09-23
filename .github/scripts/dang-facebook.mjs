@@ -118,6 +118,21 @@ async function main() {
 
   if (DRY) { console.log('✅ DRY-RUN ổn, chưa đăng.'); return; }
 
+  // --at HH:MM : nếu chưa tới giờ đăng (giờ VN) thì chờ tới đúng giờ đó rồi mới đăng (tối đa 3 tiếng).
+  const AT = arg('--at');
+  if (AT && /^\d{1,2}:\d{2}$/.test(AT)) {
+    const [h, m] = AT.split(':').map(Number);
+    const vnNow = new Date(Date.now() + 7 * 3600e3);
+    const target = Date.UTC(vnNow.getUTCFullYear(), vnNow.getUTCMonth(), vnNow.getUTCDate(), h, m) - 7 * 3600e3;
+    const wait = target - Date.now();
+    if (wait > 0 && wait < 3 * 3600e3) {
+      console.log(`⏰ Chờ tới ${AT} giờ VN mới đăng (${Math.round(wait / 60000)} phút)...`);
+      await new Promise(r => setTimeout(r, wait));
+      const dup2 = await alreadyPosted();
+      if (dup2) { console.log(`⏭️  Trong lúc chờ đã có bài ngày ${DATE_VN} (post ${dup2.id}) — bỏ qua.`); return; }
+    }
+  }
+
   const form = new FormData();
   const blob = new Blob([fs.readFileSync(mediaFile)], { type: USE_IMAGE ? 'image/png' : 'video/mp4' });
   let result;
