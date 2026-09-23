@@ -44,6 +44,7 @@ jobs:
           TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
           TIKTOK_REFRESH_TOKEN: ${{ secrets.TIKTOK_REFRESH_TOKEN }}
           GH_TOKEN: ${{ secrets.GH_PAT }}
+          NTFY_TOPIC: vq-lichvannien-0f2116be
           IN_DATE: ${{ github.event.inputs.date }}
           IN_MODE: ${{ github.event.inputs.mode }}
           EVENT: ${{ github.event_name }}
