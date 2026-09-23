@@ -1,0 +1,68 @@
+# GitHub Actions — gửi video Lịch Vạn Niên vào hộp thư nháp TikTok mỗi tối (bấm Đăng trên điện thoại).
+# Đặt tại: .github/workflows/dang-tiktok.yml  (repo aqtienanh-bot/lich-van-nien-media)
+# Script:  .github/scripts/dang-tiktok.mjs
+# Secrets: TIKTOK_CLIENT_KEY, TIKTOK_CLIENT_SECRET, TIKTOK_REFRESH_TOKEN  (tuỳ chọn GH_PAT để tự lưu refresh token mới)
+name: Dang TikTok (hop thu) - Lich Van Nien
+
+on:
+  schedule:
+    - cron: '40 12 * * *'   # 19:40 VN
+    - cron: '10 14 * * *'   # 21:10 VN (chạy bù)
+    - cron: '40 15 * * *'   # 22:40 VN (chạy bù)
+  push:
+    branches: [main]
+    paths: ['lich-van-nien/xuat-ban/**']
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Ngày bài YYYY-MM-DD (để trống = ngày mai theo giờ VN)'
+        required: false
+      mode:
+        description: 'send | dry-run'
+        required: false
+        default: 'send'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dang-tiktok
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Gui video vao hop thu TikTok
+        env:
+          TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
+          TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
+          TIKTOK_REFRESH_TOKEN: ${{ secrets.TIKTOK_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          IN_DATE: ${{ github.event.inputs.date }}
+          IN_MODE: ${{ github.event.inputs.mode }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [ -z "$TIKTOK_REFRESH_TOKEN" ]; then echo "Chua cau hinh TikTok (thieu secret TIKTOK_REFRESH_TOKEN) - bo qua."; exit 0; fi
+          ARGS="--root ."
+          [ -n "$IN_DATE" ] && ARGS="$ARGS --date $IN_DATE"
+          [ "$IN_MODE" = "dry-run" ] && ARGS="$ARGS --dry-run"
+          if [ "$EVENT" = "push" ] && [ "$(TZ=Asia/Ho_Chi_Minh date +%H)" -lt 17 ]; then ARGS="$ARGS --dry-run"; fi
+          if [ "$EVENT" != "workflow_dispatch" ]; then ARGS="$ARGS --at 19:40"; fi
+          if [ "$EVENT" = "schedule" ] && [ "$(date -u +%H)" != "15" ]; then export SOFT_MISSING=1; fi
+          [ -z "$GH_TOKEN" ] && unset GH_TOKEN
+          node .github/scripts/dang-tiktok.mjs $ARGS
+      - name: Luu dau da gui (chong gui trung)
+        run: |
+          if [ -n "$(git status --porcelain .github/tiktok-log)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .github/tiktok-log
+            git commit -m "tiktok: da gui hop thu $(ls -t .github/tiktok-log | head -1)"
+            git pull --rebase origin main && git push origin HEAD:main
+          fi
