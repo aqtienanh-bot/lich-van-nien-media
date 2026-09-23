@@ -98,18 +98,19 @@ async function alreadyPosted() {
 async function main() {
   console.log(`📅 Ngày bài: ${DATE} (${DATE_VN}) · Page ${PAGE_ID} · ${USE_IMAGE ? 'ẢNH' : 'VIDEO'}${DRY ? ' · DRY-RUN' : ''}`);
 
-  const caption = readCaption();
-  if (!caption) fail(`Không thấy caption: ${path.relative(ROOT, fbDir)}/caption.txt hoặc ${path.relative(ROOT, dayDir)}/NOI_DUNG_DANG.txt`);
-  if (!caption.split('\n')[0].includes(DATE_VN)) console.warn(`⚠️  Dòng đầu caption không chứa "${DATE_VN}" — kiểm tra lại đúng ngày chưa.`);
-  if (!fs.existsSync(mediaFile)) fail(`Không thấy file: ${path.relative(ROOT, mediaFile)}`);
-  console.log(`📝 Caption ${Buffer.byteLength(caption)} byte · 🎞️ ${path.relative(ROOT, mediaFile)} (${(fs.statSync(mediaFile).size / 1e6).toFixed(1)} MB)`);
-
   const me = await graph(`${GRAPH}/me?fields=id,name`);
   if (me.id !== PAGE_ID) fail(`Token thuộc "${me.name}" (${me.id}), không phải Page ${PAGE_ID}.`);
   console.log(`🔑 Token hợp lệ cho Page "${me.name}"`);
 
   const dup = await alreadyPosted();
   if (dup) { console.log(`⏭️  Đã có bài ngày ${DATE_VN} (post ${dup.id}, ${dup.created_time}) — bỏ qua.`); return; }
+
+  const caption = readCaption();
+  if (!caption) fail(`Không thấy caption: ${path.relative(ROOT, fbDir)}/caption.txt hoặc ${path.relative(ROOT, dayDir)}/NOI_DUNG_DANG.txt`);
+  if (!caption.split('\n')[0].includes(DATE_VN)) console.warn(`⚠️  Dòng đầu caption không chứa "${DATE_VN}" — kiểm tra lại đúng ngày chưa.`);
+  if (!fs.existsSync(mediaFile)) fail(`Không thấy file: ${path.relative(ROOT, mediaFile)}`);
+  console.log(`📝 Caption ${Buffer.byteLength(caption)} byte · 🎞️ ${path.relative(ROOT, mediaFile)} (${(fs.statSync(mediaFile).size / 1e6).toFixed(1)} MB)`);
+
   if (DRY) { console.log('✅ DRY-RUN ổn, chưa đăng.'); return; }
 
   const form = new FormData();
