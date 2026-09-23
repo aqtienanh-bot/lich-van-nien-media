@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Caption TikTok hôm nay</title>
+<style>
+  :root{--bg:#FFF6E0;--card:#fff;--ink:#1B0F03;--sub:#7A2E0A;--btn:#2B1706;--btnt:#FCE0A0}
+  @media (prefers-color-scheme:dark){:root{--bg:#1a120a;--card:#2a1d10;--ink:#fbe9c6;--sub:#f3b76b;--btn:#FCE0A0;--btnt:#2B1706}}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,sans-serif}
+  main{max-width:640px;margin:0 auto;padding:16px}
+  h1{font-size:20px;margin:8px 0 4px} .sub{color:var(--sub);font-size:14px;margin-bottom:12px}
+  button{width:100%;padding:18px;font-size:20px;font-weight:700;border:0;border-radius:14px;background:var(--btn);color:var(--btnt);position:sticky;top:8px}
+  pre{white-space:pre-wrap;word-wrap:break-word;background:var(--card);padding:14px;border-radius:12px;font:15px/1.5 system-ui,sans-serif;margin-top:14px}
+  .ok{background:#1f7a3a!important;color:#fff!important}
+</style></head>
+<body><main>
+  <h1>Caption TikTok</h1>
+  <div class="sub" id="day">Đang tải…</div>
+  <button id="copy" disabled>📋 COPY CAPTION</button>
+  <pre id="cap"></pre>
+</main>
+<script>
+const API='https://api.github.com/repos/aqtienanh-bot/lich-van-nien-media/contents/lich-van-nien/xuat-ban';
+const BASE='https://aqtienanh-bot.github.io/lich-van-nien-media/lich-van-nien/xuat-ban/';
+async function latestDay(){
+  try{ const r=await fetch(API+'?ref=main',{cache:'no-store'}); const j=await r.json(); if(Array.isArray(j)) return j.map(x=>x.name).filter(n=>/^\d{4}-\d{2}-\d{2}$/.test(n)).sort().pop(); }catch(e){}
+  const d=new Date(Date.now()+7*3600e3); const t=[0,1].map(k=>new Date(d.getTime()+k*864e5).toISOString().slice(0,10));
+  for(const x of t.reverse()){ const r=await fetch(BASE+x+'/tiktok/caption.txt',{cache:'no-store'}); if(r.ok) return x; }
+}
+(async()=>{
+  const day=await latestDay(); const el=document.getElementById('cap'), b=document.getElementById('copy');
+  if(!day){document.getElementById('day').textContent='Chưa có caption.';return;}
+  const r=await fetch(BASE+day+'/tiktok/caption.txt?t='+Date.now(),{cache:'no-store'});
+  const txt=r.ok?(await r.text()).trim():'';
+  const [y,m,d]=day.split('-'); document.getElementById('day').textContent='Bài ngày '+(+d)+'/'+(+m)+'/'+y+(txt?'':' — chưa có caption');
+  el.textContent=txt; b.disabled=!txt;
+  b.onclick=async()=>{
+    try{ await navigator.clipboard.writeText(txt); }
+    catch(e){ const s=document.createRange(); s.selectNodeContents(el); const w=getSelection(); w.removeAllRanges(); w.addRange(s); document.execCommand('copy'); }
+    b.textContent='✅ ĐÃ COPY — mở TikTok và dán'; b.classList.add('ok');
+  };
+})();
+</script>
+</body></html>
