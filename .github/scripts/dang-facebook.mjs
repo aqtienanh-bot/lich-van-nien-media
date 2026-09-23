@@ -106,6 +106,11 @@ async function main() {
   if (dup) { console.log(`⏭️  Đã có bài ngày ${DATE_VN} (post ${dup.id}, ${dup.created_time}) — bỏ qua.`); return; }
 
   const caption = readCaption();
+  const missing = !caption ? 'caption' : (!fs.existsSync(mediaFile) ? path.basename(mediaFile) : null);
+  if (missing && process.env.SOFT_MISSING === '1') {
+    console.log(`⏳ Chưa có ${missing} cho ngày ${DATE} (routine chưa đẩy lên) — chờ lần chạy sau.`);
+    return;
+  }
   if (!caption) fail(`Không thấy caption: ${path.relative(ROOT, fbDir)}/caption.txt hoặc ${path.relative(ROOT, dayDir)}/NOI_DUNG_DANG.txt`);
   if (!caption.split('\n')[0].includes(DATE_VN)) console.warn(`⚠️  Dòng đầu caption không chứa "${DATE_VN}" — kiểm tra lại đúng ngày chưa.`);
   if (!fs.existsSync(mediaFile)) fail(`Không thấy file: ${path.relative(ROOT, mediaFile)}`);
