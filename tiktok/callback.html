@@ -1,0 +1,5 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>100xAgent - TikTok</title>
+<style>body{font-family:system-ui,sans-serif;max-width:560px;margin:40px auto;padding:0 16px;color:#222}</style></head>
+<body><h2>Đã kết nối TikTok</h2><p id="s">Đang đọc mã…</p>
+<script>const p=new URLSearchParams(location.search);document.getElementById('s').textContent=p.get('code')?'Đã nhận mã cấp quyền. Bạn có thể quay lại Claude.':('Không có mã: '+(p.get('error_description')||p.get('error')||'')); </script>
+</body></html>
