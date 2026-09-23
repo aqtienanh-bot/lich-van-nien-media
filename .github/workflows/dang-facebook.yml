@@ -1,0 +1,55 @@
+# GitHub Actions — tự đăng Lịch Vạn Niên lên Facebook Page mỗi tối.
+# Đặt file này tại:  .github/workflows/dang-facebook.yml   trong repo aqtienanh-bot/lich-van-nien-media
+# Script đi kèm:     .github/scripts/dang-facebook.mjs
+# Secrets cần có (Settings → Secrets and variables → Actions): FB_PAGE_ID, FB_PAGE_ACCESS_TOKEN
+name: Dang Facebook - Lich Van Nien
+
+on:
+  schedule:
+    # Giờ UTC. 12:30 = 19:30 VN; các lần sau là "chạy bù" nếu routine đẩy media trễ.
+    # Script tự bỏ qua nếu bài của ngày đó đã có trên Page => không đăng trùng.
+    - cron: '30 12 * * *'
+    - cron: '0 14 * * *'
+    - cron: '30 15 * * *'
+    - cron: '0 17 * * *'
+  push:
+    branches: [main]
+    paths: ['lich-van-nien/xuat-ban/**']
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Ngày bài YYYY-MM-DD (để trống = ngày mai theo giờ VN)'
+        required: false
+      mode:
+        description: 'video | image | dry-run'
+        required: false
+        default: 'video'
+
+concurrency:
+  group: dang-facebook
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Dang bai
+        env:
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+          IN_DATE: ${{ github.event.inputs.date }}
+          IN_MODE: ${{ github.event.inputs.mode }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          ARGS="--root ."
+          [ -n "$IN_DATE" ] && ARGS="$ARGS --date $IN_DATE"
+          [ "$IN_MODE" = "image" ] && ARGS="$ARGS --image"
+          [ "$IN_MODE" = "dry-run" ] && ARGS="$ARGS --dry-run"
+          # Khi routine vừa đẩy media (push) trước 18:00 VN thì chỉ kiểm tra, để 19:30 mới đăng.
+          if [ "$EVENT" = "push" ] && [ "$(TZ=Asia/Ho_Chi_Minh date +%H)" -lt 18 ]; then ARGS="$ARGS --dry-run"; fi
+          node .github/scripts/dang-facebook.mjs $ARGS
