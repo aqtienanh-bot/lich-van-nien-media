@@ -32,7 +32,7 @@ concurrency:
 jobs:
   post:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -50,8 +50,9 @@ jobs:
           [ -n "$IN_DATE" ] && ARGS="$ARGS --date $IN_DATE"
           [ "$IN_MODE" = "image" ] && ARGS="$ARGS --image"
           [ "$IN_MODE" = "dry-run" ] && ARGS="$ARGS --dry-run"
-          # Khi routine vừa đẩy media (push) trước 18:00 VN thì chỉ kiểm tra, để 19:30 mới đăng.
-          if [ "$EVENT" = "push" ] && [ "$(TZ=Asia/Ho_Chi_Minh date +%H)" -lt 18 ]; then ARGS="$ARGS --dry-run"; fi
+          # Push trước 17:00 VN (đẩy thử/sửa tay) thì chỉ kiểm tra. Push/lịch tự động: chờ tới đúng 19:30 VN mới đăng.
+          if [ "$EVENT" = "push" ] && [ "$(TZ=Asia/Ho_Chi_Minh date +%H)" -lt 17 ]; then ARGS="$ARGS --dry-run"; fi
+          if [ "$EVENT" != "workflow_dispatch" ]; then ARGS="$ARGS --at 19:30"; fi
           # Các lần chạy theo lịch (trừ lần cuối 00:00 VN): nếu routine chưa đẩy nội dung thì chờ, không báo lỗi.
           if [ "$EVENT" = "schedule" ] && [ "$(date -u +%H)" != "17" ]; then export SOFT_MISSING=1; fi
           node .github/scripts/dang-facebook.mjs $ARGS
