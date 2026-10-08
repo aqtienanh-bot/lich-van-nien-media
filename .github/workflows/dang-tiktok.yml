@@ -58,12 +58,13 @@ jobs:
           if [ "$EVENT" = "schedule" ] && [ "$(date -u +%H)" != "15" ]; then export SOFT_MISSING=1; fi
           [ -z "$GH_TOKEN" ] && unset GH_TOKEN
           node .github/scripts/dang-tiktok.mjs $ARGS
-      - name: Luu dau da gui (chong gui trung)
+      - name: Luu dau da gui (chong gui trung, chi giu 2 ngay gan nhat)
         run: |
+          ls .github/tiktok-log/*.json 2>/dev/null | sort | head -n -2 | xargs -r rm -f
           if [ -n "$(git status --porcelain .github/tiktok-log)" ]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add .github/tiktok-log
-            git commit -m "tiktok: da gui hop thu $(ls -t .github/tiktok-log | head -1)"
+            git add -A .github/tiktok-log
+            git commit -m "tiktok: da gui hop thu $(ls -t .github/tiktok-log | head -1) (don log cu)"
             git pull --rebase origin main && git push origin HEAD:main
           fi
