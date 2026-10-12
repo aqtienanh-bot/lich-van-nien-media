@@ -20,6 +20,10 @@ import { fileURLToPath } from 'node:url';
 
 const GRAPH = 'https://graph.facebook.com/v26.0';
 const GRAPH_VIDEO = 'https://graph-video.facebook.com/v26.0';
+// Username công khai của Page (KHÔNG phải bí mật) — dùng để dựng link xem bài đúng định dạng,
+// vì phản hồi API khi đăng video chỉ trả về video id (không phải post id dạng "pageid_storyid"),
+// nên "https://www.facebook.com/<video id>" trước đây KHÔNG mở ra đúng bài.
+const PAGE_USERNAME = 'Shophaoquang25589';
 
 // ---------- tham số ----------
 const argv = process.argv.slice(2);
@@ -148,14 +152,17 @@ async function main() {
     result = await graph(`${GRAPH_VIDEO}/${PAGE_ID}/videos`, { method: 'POST', body: form });
   }
   const id = result.post_id || result.id;
-  console.log(`✅ Đã đăng: id ${id} → https://www.facebook.com/${id}`);
+  // Link xem bài: ảnh có post_id dạng "pageid_storyid" nên dùng thẳng; video Graph API chỉ trả
+  // video id đơn (không phải post id) nên phải dùng path /videos/<id> theo username Page mới ra đúng bài.
+  const url = USE_IMAGE ? `https://www.facebook.com/${result.post_id || id}` : `https://www.facebook.com/${PAGE_USERNAME}/videos/${id}`;
+  console.log(`✅ Đã đăng: id ${id} → ${url}`);
 
   // Ghi nhật ký (máy local: vào thư mục dang-facebook/nhat-ky; Actions: in ra log là đủ).
   const logDir = path.join(here, 'nhat-ky');
   try {
     fs.mkdirSync(logDir, { recursive: true });
     fs.writeFileSync(path.join(logDir, `${DATE}.json`), JSON.stringify({
-      date: DATE, page_id: PAGE_ID, type: USE_IMAGE ? 'photo' : 'video', id,
+      date: DATE, page_id: PAGE_ID, type: USE_IMAGE ? 'photo' : 'video', id, url,
       posted_at: new Date().toISOString(), caption_first_line: caption.split('\n')[0],
     }, null, 2));
   } catch { /* không bắt buộc */ }
