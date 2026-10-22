@@ -6,7 +6,7 @@ name: Dang TikTok (hop thu) - Lich Van Nien
 
 on:
   schedule:
-    - cron: '40 12 * * *'   # 19:40 VN
+    - cron: '15 12 * * *'   # 19:15 VN
     - cron: '10 14 * * *'   # 21:10 VN (chạy bù)
     - cron: '40 15 * * *'   # 22:40 VN (chạy bù)
   push:
@@ -54,7 +54,7 @@ jobs:
           [ -n "$IN_DATE" ] && ARGS="$ARGS --date $IN_DATE"
           [ "$IN_MODE" = "dry-run" ] && ARGS="$ARGS --dry-run"
           if [ "$EVENT" = "push" ] && [ "$(TZ=Asia/Ho_Chi_Minh date +%H)" -lt 17 ]; then ARGS="$ARGS --dry-run"; fi
-          if [ "$EVENT" != "workflow_dispatch" ]; then ARGS="$ARGS --at 19:40"; fi
+          if [ "$EVENT" != "workflow_dispatch" ]; then ARGS="$ARGS --at 19:15"; fi
           if [ "$EVENT" = "schedule" ] && [ "$(date -u +%H)" != "15" ]; then export SOFT_MISSING=1; fi
           [ -z "$GH_TOKEN" ] && unset GH_TOKEN
           node .github/scripts/dang-tiktok.mjs $ARGS

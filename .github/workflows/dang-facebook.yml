@@ -6,9 +6,9 @@ name: Dang Facebook - Lich Van Nien
 
 on:
   schedule:
-    # Giờ UTC. 12:30 = 19:30 VN; các lần sau là "chạy bù" nếu routine đẩy media trễ.
+    # Giờ UTC. 12:15 = 19:15 VN; các lần sau là "chạy bù" nếu routine đẩy media trễ.
     # Script tự bỏ qua nếu bài của ngày đó đã có trên Page => không đăng trùng.
-    - cron: '30 12 * * *'
+    - cron: '15 12 * * *'
     - cron: '0 14 * * *'
     - cron: '30 15 * * *'
     - cron: '0 17 * * *'
@@ -50,9 +50,9 @@ jobs:
           [ -n "$IN_DATE" ] && ARGS="$ARGS --date $IN_DATE"
           [ "$IN_MODE" = "image" ] && ARGS="$ARGS --image"
           [ "$IN_MODE" = "dry-run" ] && ARGS="$ARGS --dry-run"
-          # Push trước 17:00 VN (đẩy thử/sửa tay) thì chỉ kiểm tra. Push/lịch tự động: chờ tới đúng 19:30 VN mới đăng.
+          # Push trước 17:00 VN (đẩy thử/sửa tay) thì chỉ kiểm tra. Push/lịch tự động: chờ tới đúng 19:15 VN mới đăng.
           if [ "$EVENT" = "push" ] && [ "$(TZ=Asia/Ho_Chi_Minh date +%H)" -lt 17 ]; then ARGS="$ARGS --dry-run"; fi
-          if [ "$EVENT" != "workflow_dispatch" ]; then ARGS="$ARGS --at 19:30"; fi
+          if [ "$EVENT" != "workflow_dispatch" ]; then ARGS="$ARGS --at 19:15"; fi
           # Các lần chạy theo lịch (trừ lần cuối 00:00 VN): nếu routine chưa đẩy nội dung thì chờ, không báo lỗi.
           if [ "$EVENT" = "schedule" ] && [ "$(date -u +%H)" != "17" ]; then export SOFT_MISSING=1; fi
           node .github/scripts/dang-facebook.mjs $ARGS
