@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Gửi video Lịch Vạn Niên vào HỘP THƯ NHÁP TikTok (Content Posting API - Upload, scope video.upload).
+// Đăng video Lịch Vạn Niên lên TikTok: ĐĂNG THẲNG công khai kèm caption nếu app có video.publish + đã audit,
+// nếu chưa thì gửi HỘP THƯ NHÁP (scope video.upload). Tắt thử đăng thẳng: TIKTOK_DIRECT=0.
 // Chạy được với app ở chế độ SANDBOX (không cần TikTok duyệt). Sau khi gửi, điện thoại nhận thông báo
 // TikTok → bấm vào → dán caption → Đăng. (Đăng thẳng công khai cần app được audit — chưa dùng ở đây.)
 //
@@ -83,7 +84,28 @@ async function main() {
   const single = size <= 64 * 1024 * 1024;
   const chunk = single ? size : CH;
   const count = single ? 1 : Math.floor(size / CH);
-  const init = await api('/post/publish/inbox/video/init/', token, { source_info: { source: 'FILE_UPLOAD', video_size: size, chunk_size: chunk, total_chunk_count: count } });
+  const source_info = { source: 'FILE_UPLOAD', video_size: size, chunk_size: chunk, total_chunk_count: count };
+  // Ưu tiên ĐĂNG THẲNG công khai kèm caption (cần scope video.publish + app đã qua audit của TikTok).
+  // Chưa đủ điều kiện → tự lùi về gửi hộp thư nháp như cũ.
+  let init, mode = 'inbox';
+  const capFile = path.join(path.dirname(video), 'caption.txt');
+  const title = fs.existsSync(capFile) ? fs.readFileSync(capFile, 'utf8').trim().slice(0, 2200) : '';
+  if (process.env.TIKTOK_DIRECT !== '0') {
+    try {
+      const ci = await api('/post/publish/creator_info/query/', token, {});
+      const opts = ci.privacy_level_options || [];
+      if (!opts.includes('PUBLIC_TO_EVERYONE')) throw new Error(`tài khoản không cho đăng công khai (${opts.join(',')})`);
+      init = await api('/post/publish/video/init/', token, {
+        post_info: { title, privacy_level: 'PUBLIC_TO_EVERYONE', disable_comment: false, disable_duet: false, disable_stitch: false },
+        source_info,
+      });
+      mode = 'direct';
+      console.log('🚀 Đăng thẳng công khai kèm caption (Direct Post).');
+    } catch (e) {
+      console.log(`↩️  Chưa đăng thẳng được (${e.message}) — gửi hộp thư nháp.`);
+    }
+  }
+  if (!init) init = await api('/post/publish/inbox/video/init/', token, { source_info });
   const buf = fs.readFileSync(video);
   for (let i = 0; i < count; i++) {
     const start = i * chunk, end = i === count - 1 ? size - 1 : start + chunk - 1;
@@ -93,14 +115,15 @@ async function main() {
   console.log(`📤 Đã tải video lên (publish_id ${init.publish_id}). Đang chờ TikTok xử lý...`);
 
   let status = 'PROCESSING_UPLOAD';
-  for (let i = 0; i < 30 && /PROCESSING/.test(status); i++) {
+  for (let i = 0; i < 60 && /PROCESSING|SENDING/.test(status); i++) {
     await new Promise(r => setTimeout(r, 10000));
     const s = await api('/post/publish/status/fetch/', token, { publish_id: init.publish_id });
     status = s.status; if (s.fail_reason) fail(`TikTok báo lỗi: ${s.fail_reason}`);
   }
-  console.log(`📬 Trạng thái: ${status}${status === 'SEND_TO_USER_INBOX' ? ' — đã vào hộp thư TikTok. Mở điện thoại, bấm thông báo TikTok, dán caption rồi Đăng.' : ''}`);
+  if (status === 'PUBLISH_COMPLETE') console.log('✅ Đã đăng công khai lên TikTok (PUBLISH_COMPLETE).');
+  else console.log(`📬 Trạng thái: ${status}${status === 'SEND_TO_USER_INBOX' ? ' — đã vào hộp thư TikTok. Mở điện thoại, bấm thông báo TikTok, dán caption rồi Đăng.' : ''}`);
   fs.mkdirSync(path.dirname(logFile), { recursive: true });
-  fs.writeFileSync(logFile, JSON.stringify({ date: DATE, publish_id: init.publish_id, status, sent_at: new Date().toISOString() }, null, 2));
+  fs.writeFileSync(logFile, JSON.stringify({ date: DATE, mode, publish_id: init.publish_id, status, sent_at: new Date().toISOString() }, null, 2));
 }
 
 main().catch(e => fail(e.message));
