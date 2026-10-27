@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lịch Vạn Niên Mỗi Ngày</title>
+<meta name="description" content="Xem ngày tốt xấu, tuổi hợp hôm nay và mẹo phong thủy ứng dụng — cập nhật mỗi tối 19h15.">
+<meta property="og:title" content="Lịch Vạn Niên Mỗi Ngày · Phong thủy ứng dụng">
+<meta property="og:description" content="Ngày tốt xấu · Tuổi hợp hôm nay · Mẹo phong thủy. Cập nhật mỗi tối 19h15.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#12100E;--card:#1C1916;--line:#3A3226;--gold:#C5A059;--gold2:#E3C88A;--text:#F3EDE2;--muted:#A99F8E}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;min-height:100vh;display:flex;justify-content:center;padding:28px 16px 40px}
+main{width:100%;max-width:440px;text-align:center}
+.logo{width:84px;height:84px;border-radius:50%;margin:0 auto 14px;display:grid;place-items:center;border:2px solid var(--gold);font-size:38px;background:radial-gradient(circle at 30% 30%,#2A231A,#12100E)}
+h1{font-size:22px;font-weight:800;color:var(--gold2);letter-spacing:.3px}
+.sub{color:var(--muted);font-size:14px;margin:6px 0 22px;line-height:1.5}
+.today{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:18px}
+.today p{font-size:13px;color:var(--gold);font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px}
+.today img{width:100%;border-radius:10px;display:block}
+.today .none{color:var(--muted);font-size:14px;padding:18px 0}
+a.btn{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px;font-weight:600;font-size:15px;transition:.15s}
+a.btn:hover{border-color:var(--gold);transform:translateY(-1px)}
+a.btn.main{background:var(--gold);color:#12100E;border-color:var(--gold)}
+a.btn span.i{font-size:20px;width:26px;text-align:center}
+a.btn small{display:block;font-weight:400;font-size:12px;opacity:.75;margin-top:2px}
+footer{color:var(--muted);font-size:12px;margin-top:22px;line-height:1.6}
+</style>
+</head>
+<body>
+<main>
+  <div class="logo">☯</div>
+  <h1>Lịch Vạn Niên Mỗi Ngày</h1>
+  <p class="sub">Ngày tốt xấu · Tuổi hợp hôm nay · Phong thủy ứng dụng<br>Cập nhật mỗi tối 19h15</p>
+
+  <section class="today">
+    <p>Lịch hôm nay</p>
+    <div id="lich"><div class="none">Đang tải lịch hôm nay…</div></div>
+  </section>
+
+  <a class="btn main" href="https://www.facebook.com/vq25589" target="_blank" rel="noopener"><span class="i">🔮</span><div>Phong Thuỷ Vượng Phát<small>Xem lịch ngày & mẹo phong thủy mỗi ngày</small></div></a>
+  <a class="btn" href="https://www.facebook.com/Shophaoquang25589" target="_blank" rel="noopener"><span class="i">🏡</span><div>Nhà An – Số An<small>Vật phẩm phong thủy & đồ gia dụng giá tốt</small></div></a>
+  <a class="btn" href="https://www.facebook.com/vinhquangbsth" target="_blank" rel="noopener"><span class="i">👤</span><div>Nguyễn Vinh Quang<small>Trang cá nhân – kết nối trực tiếp</small></div></a>
+
+  <footer>Bình luận tuổi của bạn dưới video TikTok để được xem nhanh ngày hợp tuổi.<br>Nội dung mang tính tham khảo văn hóa truyền thống.</footer>
+</main>
+<script>
+(function(){
+  var vn=new Date(Date.now()+7*3600e3), d=vn.toISOString().slice(0,10);
+  var box=document.getElementById('lich');
+  var img=new Image();
+  img.alt='Lịch vạn niên ngày '+d.split('-').reverse().join('/');
+  img.onload=function(){box.innerHTML='';box.appendChild(img);};
+  img.onerror=function(){box.innerHTML='<div class="none">Lịch hôm nay sẽ lên lúc 19h15. Theo dõi trang để không bỏ lỡ!</div>';};
+  img.src='../lich-van-nien/xuat-ban/'+d+'/facebook/media.png';
+})();
+</script>
+</body>
+</html>
