@@ -20,7 +20,7 @@ const arg = (n) => { const i = argv.indexOf(n); return i > -1 ? argv[i + 1] : un
 const DRY = argv.includes('--dry-run');
 const ROOT = path.resolve(arg('--root') || process.cwd());
 const vnDate = (h = 0) => new Date(Date.now() + (7 + h) * 3600e3).toISOString().slice(0, 10);
-const DATE = arg('--date') || vnDate(5);
+const DATE = arg('--date') || vnDate(7); // từ 17:00 VN trở đi = ngày mai (đăng 19:15 tối hôm trước)
 const fail = (m) => { console.error(`❌ ${m}`); process.exit(1); };
 
 const { TIKTOK_CLIENT_KEY: KEY, TIKTOK_CLIENT_SECRET: SECRET, TIKTOK_REFRESH_TOKEN: REFRESH } = process.env;

@@ -36,7 +36,7 @@ function vnDate(offsetHours = 0) {
   const d = new Date(Date.now() + (7 + offsetHours) * 3600e3); // UTC+7
   return d.toISOString().slice(0, 10);
 }
-const DATE = arg('--date') || vnDate(5);
+const DATE = arg('--date') || vnDate(7); // từ 17:00 VN trở đi = ngày mai (đăng 19:15 tối hôm trước)
 if (!/^\d{4}-\d{2}-\d{2}$/.test(DATE)) fail(`Sai định dạng --date: ${DATE} (cần YYYY-MM-DD)`);
 
 // ---------- nạp .env nếu chạy trên máy (không ghi đè biến đã có) ----------

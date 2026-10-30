@@ -8,6 +8,7 @@ on:
   schedule:
     # Giờ UTC. 12:15 = 19:15 VN; các lần sau là "chạy bù" nếu routine đẩy media trễ.
     # Script tự bỏ qua nếu bài của ngày đó đã có trên Page => không đăng trùng.
+    - cron: '45 11 * * *'   # 18:45 VN — chạy dự phòng, chờ tới 19:15 mới đăng
     - cron: '15 12 * * *'
     - cron: '0 14 * * *'
     - cron: '30 15 * * *'

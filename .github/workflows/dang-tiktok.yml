@@ -6,6 +6,7 @@ name: Dang TikTok (hop thu) - Lich Van Nien
 
 on:
   schedule:
+    - cron: '45 11 * * *'   # 18:45 VN — dự phòng, chờ tới 19:15 mới gửi
     - cron: '15 12 * * *'   # 19:15 VN
     - cron: '10 14 * * *'   # 21:10 VN (chạy bù)
     - cron: '40 15 * * *'   # 22:40 VN (chạy bù)
